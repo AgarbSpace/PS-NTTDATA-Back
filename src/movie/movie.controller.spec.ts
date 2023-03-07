@@ -3,12 +3,15 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { MovieController } from './movie.controller';
 import { MovieService } from './movie.service';
 import * as request from 'supertest';
+import * as dotenv from 'dotenv'
+dotenv.config()
 
 describe('MovieController', () => {
   let app: INestApplication;
   let moviesService: MovieService;
+  let movieController: MovieController;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [MovieController],
       providers: [MovieService]
@@ -17,6 +20,7 @@ describe('MovieController', () => {
     app = module.createNestApplication();
     await app.init();
 
+    movieController = module.get<MovieController>(MovieController);
     moviesService = module.get<MovieService>(MovieService);
   });
 
@@ -70,6 +74,13 @@ describe('MovieController', () => {
     const response = await request(app.getHttpServer()).get('/movie?title=shrek');
 
     expect(response.status).toBe(200);
+    expect(response.body).toEqual(expected);
+  });
+
+  it('Should return an Unprocessable Entity error', async () => {
+    const expected = {"message": "Unprocessable Entity: At least movie title or id is required", "statusCode": 422}
+    const response = await request(app.getHttpServer()).get('/movie');
+    expect(response.status).toBe(422);
     expect(response.body).toEqual(expected);
   });
 });
