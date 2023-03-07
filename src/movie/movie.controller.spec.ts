@@ -1,36 +1,30 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import { MovieController } from './movie.controller';
+import { MovieService } from './movie.service';
 import * as request from 'supertest';
-import { AppModule } from './../src/app.module';
-import { MovieService } from './../src/movie/movie.service';
 
-describe('MoviesController (e2e)', () => {
+describe('MovieController', () => {
   let app: INestApplication;
   let moviesService: MovieService;
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+  beforeAll(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [MovieController],
+      providers: [MovieService]
     }).compile();
 
-    app = moduleFixture.createNestApplication();
+    app = module.createNestApplication();
     await app.init();
 
-    moviesService = moduleFixture.get<MovieService>(MovieService);
+    moviesService = module.get<MovieService>(MovieService);
   });
 
   afterAll(async () => {
-    await app.close();
-  })
-
-  it('Should make sure the server is starting', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+    app.close();
   });
 
-  it('Should return the expected result', async () => {
+  it('should return search result', async () => {
     const expected = {
   "Title": "Shrek",
   "Year": "2001",

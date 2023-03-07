@@ -1,36 +1,30 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
-import { AppModule } from './../src/app.module';
-import { MovieService } from './../src/movie/movie.service';
+import { Test, TestingModule } from '@nestjs/testing';
+import axios, {AxiosStatic} from 'axios';
+import { MovieService } from './movie.service';
 
-describe('MoviesController (e2e)', () => {
+jest.mock('axios');
+
+describe('MovieService', () => {
   let app: INestApplication;
-  let moviesService: MovieService;
+  let service: MovieService;
+  let axiosMock: jest.Mocked<AxiosStatic>;
 
   beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [MovieService],
     }).compile();
+    app = module.createNestApplication();
 
-    app = moduleFixture.createNestApplication();
-    await app.init();
-
-    moviesService = moduleFixture.get<MovieService>(MovieService);
+    service = module.get<MovieService>(MovieService);
+    axiosMock = axios as jest.Mocked<AxiosStatic>;
   });
 
   afterAll(async () => {
-    await app.close();
-  })
-
-  it('Should make sure the server is starting', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+    app.close();
   });
 
-  it('Should return the expected result', async () => {
+  it('should search movies by title', async () => {
     const expected = {
   "Title": "Shrek",
   "Year": "2001",
@@ -70,12 +64,16 @@ describe('MoviesController (e2e)', () => {
   "Production": "N/A",
   "Website": "N/A",
   "Response": "True"
-};
-    jest.spyOn(moviesService, 'searchMovies').mockResolvedValue(expected);
+    };
+    axiosMock.get.mockResolvedValueOnce({ data: expected });
 
-    const response = await request(app.getHttpServer()).get('/movie?title=shrek');
+    const result = await service.searchMovies('Shrek');
+    expect(result).toEqual(expected);
+  });
 
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual(expected);
+  it('should throw an error if the API request fails', async () => {
+    axiosMock.get.mockRejectedValueOnce(new Error('API request failed'));
+
+    await expect(service.searchMovies('Shrek')).rejects.toThrow('API request failed');
   });
 });
