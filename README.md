@@ -24,7 +24,7 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+This project is an movies and series searcher.
 
 ## Installation
 
@@ -44,6 +44,8 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+
+This project will run in localhost:5000, and the path you need to send requests is /movies
 
 ## Test
 
