@@ -7,11 +7,10 @@ export class MovieController {
   constructor(private readonly moviesService: MovieService) { }
   
   @Get()
-  async searchMovies(@Query('title') title?: string, id?: string, year?: string, plot?: string) {
+  async searchMovies(@Query('title') title?: string, @Query('id') id?: string, @Query('year') year?: string, @Query('plot') plot?: string) {
     if (!process.env.API_KEY) {
       throw new HttpException('Unauthorized: Api Key not found', 401);
     }
-
     if (!title && !id) {
       throw new HttpException('Unprocessable Entity: At least movie title or id is required', 422);
     }
